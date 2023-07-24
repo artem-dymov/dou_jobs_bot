@@ -1,6 +1,7 @@
 class Vacancy:
-    def __init__(self, name: str, company: str, short_description: str):
-        self.name = name
+    def __init__(self, title: str, company: str, short_info: str, weblink):
+        self.title = title
         self.company = company
-        self.short_description = short_description
+        self.short_info = short_info
+        self.weblink = weblink
 

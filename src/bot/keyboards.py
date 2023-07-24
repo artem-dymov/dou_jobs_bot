@@ -2,10 +2,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 from aiogram import types
 
-category_cd: CallbackData = CallbackData('category_id', 'value')
-
-exp_cd: CallbackData = CallbackData('exp_id', 'text')
-city_cd: CallbackData = CallbackData('city_id', 'text')
+category_cd: CallbackData = CallbackData('category_id', 'category_value')
 
 
 async def categories_markup(categories: list[str]) -> InlineKeyboardMarkup:
@@ -17,6 +14,9 @@ async def categories_markup(categories: list[str]) -> InlineKeyboardMarkup:
     return markup
 
 
+exp_cd: CallbackData = CallbackData('exp_id', 'exp_text')
+
+
 async def exps_markup(exps: list[str]) -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
     for exp in exps:
@@ -24,6 +24,9 @@ async def exps_markup(exps: list[str]) -> InlineKeyboardMarkup:
             InlineKeyboardButton(text=exp, callback_data=exp_cd.new(exp))
         )
     return markup
+
+
+city_cd: CallbackData = CallbackData('city_id', 'city_text')
 
 
 async def cities_markup(cities: list[str]) -> InlineKeyboardMarkup:

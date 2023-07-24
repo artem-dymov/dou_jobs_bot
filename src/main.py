@@ -1,11 +1,14 @@
 import json
 from aiogram import Bot, Dispatcher, executor, types
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 with open('src/config.json', 'r') as file:
     bot_token = json.load(file)['BOT_TOKEN']
 
 bot = Bot(token=bot_token)
-dp = Dispatcher(bot)
+
+storage = MemoryStorage()
+dp = Dispatcher(bot, storage=storage)
 
 active_sessions = {}
 
