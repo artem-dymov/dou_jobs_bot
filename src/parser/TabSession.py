@@ -132,7 +132,6 @@ class TabSession:
             vacancy = Vacancy(title, company, short_info, vac_link)
             vacancies_container.add_vacancy(vacancy)
 
-
         return vacancies_container
 
 
