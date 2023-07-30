@@ -10,8 +10,8 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from selenium.webdriver.remote.webelement import WebElement
 
-from Vacancy import Vacancy
-from VacanciesContainer import VacanciesContainer
+from src.parser.Vacancy import Vacancy
+from src.parser.VacanciesContainer import VacanciesContainer
 
 
 class TabSession:
@@ -84,7 +84,6 @@ class TabSession:
             # New WebElement variable will be created when button
             # will be loaded after previous usage
             try:
-                print('trying')
                 more_btn = WebDriverWait(self.driver, 3).until(
                     EC.element_to_be_clickable((By.XPATH, '//div[@class="more-btn"]/a'))
                 )
@@ -122,16 +121,17 @@ class TabSession:
         for vacancy_div in vacancies_divs:
 
             # this tag contains weblink to vac in href property and vac name in tag text
-            a_tag: WebElement = vacancy_div.find_element(By.XPATH, '//div[@class="title"]/a')
+            a_tag: WebElement = vacancy_div.find_element(By.XPATH, './/div[@class="title"]/a')
 
             title: str = a_tag.text
             vac_link: str = a_tag.get_attribute('href')
 
-            company: str = vacancy_div.find_element(By.XPATH, '//a[@class="company"]').text
-            short_info: str = vacancy_div.find_element(By.XPATH, '//div[@class="sh-info"]').text
+            company: str = vacancy_div.find_element(By.XPATH, './/a[@class="company"]').text
+            short_info: str = vacancy_div.find_element(By.XPATH, './/div[@class="sh-info"]').text
 
             vacancy = Vacancy(title, company, short_info, vac_link)
             vacancies_container.add_vacancy(vacancy)
+
 
         return vacancies_container
 

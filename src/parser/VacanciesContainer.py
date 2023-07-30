@@ -1,4 +1,4 @@
-from Vacancy import Vacancy
+from src.parser.Vacancy import Vacancy
 from typing import Union
 
 
@@ -41,3 +41,4 @@ class VacanciesContainer:
 
     def clear(self):
         self._vacancies = []
+
