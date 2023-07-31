@@ -72,7 +72,7 @@ async def city_callback(call: types.CallbackQuery, callback_data: dict, state: F
     vac_container = session.download_vacancies()
     await state.update_data({'vac_container': vac_container})
 
-    vacancy = vac_container.get_vacancies(1, True)[0]
+    vacancy = vac_container.get_vacancy()
     vacancy_text = f'{vacancy.title}\n\nКомпанія: {vacancy.company}\n\n{vacancy.short_info}\n' \
                    f'\n{vacancy.weblink}'
 
@@ -82,24 +82,31 @@ async def city_callback(call: types.CallbackQuery, callback_data: dict, state: F
 @dp.callback_query_handler(keyboards.vacancy_cd.filter(), state=StorageStates.basic_state)
 async def vacancy_callback(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
     choice: str = callback_data.get('choice')
-
     if choice != 'cancel':
         session: TabSession = active_sessions[call.from_user.id]
 
-        if choice == 'show_following':
-            state_data = await state.get_data()
-            vac_container: VacanciesContainer = state_data['vac_container']
-            vacancy = vac_container.get_vacancies(1, True)[0]
+        state_data = await state.get_data()
+        vac_container: VacanciesContainer = state_data['vac_container']
 
+        if choice == 'show_following':
+            vacancy = vac_container.get_vacancy(following=True)
+        elif choice == 'show_previous':
+            vacancy = vac_container.get_vacancy(following=False)
+        else:
+            vacancy = None
+
+        if vacancy:
             vacancy_text = f'{vacancy.title}\n\nКомпанія: {vacancy.company}\n\n{vacancy.short_info}\n' \
                            f'\n{vacancy.weblink}'
 
             await call.message.edit_text(vacancy_text)
 
             await call.message.edit_reply_markup(await keyboards.vacancy_keyboard())
-        else:
-            pass
 
+            await state.update_data({'vac_container': vac_container})
+            await call.answer()
+        else:
+            await call.answer(text='Далі немає вакансій')
     else:
         await call.message.edit_reply_markup(None)
 

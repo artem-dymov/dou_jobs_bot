@@ -83,29 +83,30 @@ class TabSession:
 
             # New WebElement variable will be created when button
             # will be loaded after previous usage
-            try:
-                more_btn = WebDriverWait(self.driver, 3).until(
-                    EC.element_to_be_clickable((By.XPATH, '//div[@class="more-btn"]/a'))
-                )
-            except exceptions.NoSuchElementException:
-                break
-            except exceptions.TimeoutException:
-                break
-
-            # This method can be called without assigning its result to a variable,
-            # but I made it to avoid PyCharm warnings (no effect code)
-            loc = more_btn.location_once_scrolled_into_view
 
             # Sometimes a button 'More 'may not have enough time to load properly before the driver
             # tries to click on it.
             # This try block prevents such exceptions.
             # Possible exception - ElementNotInteractableException.
             # Another possible exception is ElementClickInterceptedException,
-            # but so far this error did not appear in the first tests
             try:
+                more_btn = WebDriverWait(self.driver, 3).until(
+                    EC.element_to_be_clickable((By.XPATH, '//div[@class="more-btn"]/a'))
+                )
+
+                # This method can be called without assigning its result to a variable,
+                # but I made it to avoid PyCharm warnings (no effect code)
+                loc = more_btn.location_once_scrolled_into_view
+
                 more_btn.click()
+            except exceptions.NoSuchElementException:
+                break
             except exceptions.ElementNotInteractableException:
-                pass
+                break
+            except exceptions.ElementClickInterceptedException:
+                break
+            except exceptions.TimeoutException:
+                return None
 
     # downloads vacancies from webpage
     def download_vacancies(self) -> VacanciesContainer:

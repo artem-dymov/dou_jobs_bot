@@ -15,25 +15,37 @@ class VacanciesContainer:
     def add_vacancies(self, vacancies: list[Vacancy]) -> None:
         self._vacancies.extend(vacancies)
 
-    # method get_vacancies returns not all vacancies but some quantity of them
-    # Important! By default, this method returns always new vacancies if container have them
-    # You can refresh counter to go through list of vacancies again.
-    # Or you can set parameter 'following' to 'False' to go backwards
-    def get_vacancies(self, quantity: int, following=True) -> Union[list[Vacancy], None]:
-        vacancies = []
-        if self._vacancies is None:
+    # returns only 1 vacancy or
+    # None if you reached limit in forward or reverse direction, or if there are no vacs in self._vacancies
+
+    # param following responses for direction which you want to go through the vacs list
+    # if value None specified - func will return current vac (index counter doesn't change)
+    # if value is True and False for following and previous, respectively (ind. counter changes higher and lower resp.)
+    def get_vacancy(self, following: Union[bool, None] = None) -> Union[Vacancy, None]:
+        if len(self._vacancies) < 1:
             return None
 
-        for i in range(quantity):
-            if self._vacancies_counter < len(self._vacancies):
-                vacancies.append(self._vacancies[self._vacancies_counter])
-                self._vacancies_counter += 1
-            else:
-                return None
-        if len(vacancies) > 0:
-            return vacancies
-        else:
-            return None
+        match following:
+            case None:
+                vacancy = self._vacancies[self._vacancies_counter]
+                return vacancy
+            case True:
+                # Checking that the index doesn't become more than there are vacancies (than max index in vacs list)
+                if (self._vacancies_counter + 1) < len(self._vacancies):
+                    self._vacancies_counter += 1
+                    vacancy = self._vacancies[self._vacancies_counter]
+                    return vacancy
+                else:
+                    return None
+            case False:
+                # Checking that the index doesn't become less than 0
+                # (we can't go backwards beyond first vacancy)
+                if not ((self._vacancies_counter - 1) < 0):
+                    self._vacancies_counter -= 1
+                    vacancy = self._vacancies[self._vacancies_counter]
+                    return vacancy
+                else:
+                    return None
 
     def refresh_counter(self) -> None:
         self._vacancies_counter = 0
