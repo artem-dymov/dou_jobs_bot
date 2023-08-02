@@ -25,15 +25,56 @@ async def send_welcome(message: types.Message, state: FSMContext):
         session = TabSession()
         active_sessions.update({message.from_user.id: session})
 
-    await mes.edit_text('Hello to DOU JOBS. Choose category',
-                        reply_markup=await keyboards.categories_markup(session.get_categories()))
+    await mes.edit_text('Вітаю у боті для пошуку вакансій на DOU JOBS',
+                        reply_markup=await keyboards.start_options_markup())
 
     await state.set_state(StorageStates.basic_state)
 
 
+@dp.callback_query_handler(keyboards.start_options_cd.filter(), state=StorageStates.basic_state)
+async def start_cb_handler(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    session: TabSession = active_sessions[call.from_user.id]
+
+    # indicates what option user has chosen
+    choice: str = callback_data.get('choice')
+
+    match choice:
+        case 'categories':
+            await call.message.edit_text('Оберіть категорію',
+                                         reply_markup=await keyboards.categories_markup(session.get_categories()))
+        case 'search':
+            session.open_homepage()
+
+            await call.message.answer('Введіть ваш текстовий запит')
+            await state.set_state(StorageStates.entering_request)
+
+
+# Button "Пошук вручну" handler
+@dp.message_handler(state=StorageStates.entering_request)
+async def user_request_handler(message: types.Message, state: FSMContext):
+    await message.answer('Робимо запит...')
+
+    session: TabSession = active_sessions[message.from_user.id]
+    session.send_request(message.text)
+
+    vacs_container = session.download_vacancies()
+    vacancy = vacs_container.get_vacancy()
+
+    if vacancy:
+        await state.update_data({'vac_container': vacs_container})
+
+        vacancy_text = f'{vacancy.title}\n\nКомпанія: {vacancy.company}\n\n{vacancy.short_info}\n' \
+                       f'\n{vacancy.weblink}'
+        await message.answer(vacancy_text, reply_markup=await keyboards.vacancy_keyboard())
+        await state.set_state(StorageStates.basic_state)
+    else:
+        await message.answer('Не знайдено вакансій')
+
+
+
 # categories_markup callback handler
 @dp.callback_query_handler(keyboards.category_cd.filter(), state=StorageStates.basic_state)
-async def category_callback(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
+async def category_cb_handler(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
 
     # Deletes old keyboard
     # await call.message.edit_reply_markup(None)
@@ -50,19 +91,27 @@ async def category_callback(call: types.CallbackQuery, callback_data: dict, stat
 
 
 @dp.callback_query_handler(keyboards.exp_cd.filter(), state=StorageStates.basic_state)
-async def exp_callback(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
+async def exp_cb_handler(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
     cb_text = callback_data.get('exp_text')
     await state.update_data({'exp_text': cb_text})
 
     session: TabSession = active_sessions[call.from_user.id]
     session.set_exp(cb_text)
 
-    await call.message.edit_text('Оберіть місто')
-    await call.message.edit_reply_markup(await keyboards.cities_markup(session.get_cities()))
+    markup = await keyboards.cities_markup(session.get_cities())
+    if markup:
+        await call.message.edit_text('Оберіть місто')
+        await call.message.edit_reply_markup(await keyboards.cities_markup(session.get_cities()))
+    else:
+        await call.message.edit_text('Не знайдено вакансій')
+        try:
+            await call.message.edit_reply_markup(None)
+        except Exception:
+            pass
 
 
 @dp.callback_query_handler(keyboards.city_cd.filter(), state=StorageStates.basic_state)
-async def city_callback(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
+async def city_cb_handler(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
     cb_text = callback_data.get('city_text')
     await state.update_data({'city_text': cb_text})
 
@@ -80,7 +129,7 @@ async def city_callback(call: types.CallbackQuery, callback_data: dict, state: F
 
 
 @dp.callback_query_handler(keyboards.vacancy_cd.filter(), state=StorageStates.basic_state)
-async def vacancy_callback(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
+async def vacancy_cb_handler(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
     choice: str = callback_data.get('choice')
     if choice != 'cancel':
         session: TabSession = active_sessions[call.from_user.id]

@@ -19,6 +19,9 @@ class TabSession:
 
     def __init__(self):
         self.driver = webdriver.Chrome()
+        self.open_homepage()
+
+    def open_homepage(self):
         self.driver.get(self.website_link)
 
     # method parse available categories from website
@@ -134,6 +137,14 @@ class TabSession:
             vacancies_container.add_vacancy(vacancy)
 
         return vacancies_container
+
+    # sends request text to search field on website and clicks submit
+    def send_request(self, text: str) -> None:
+        input_field: WebElement = self.driver.find_element(By.XPATH, '//input[@class="job"][@name="search"]')
+
+        input_field.send_keys(text)
+        input_field.submit()
+
 
 
 

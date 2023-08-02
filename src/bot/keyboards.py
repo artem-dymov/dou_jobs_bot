@@ -1,8 +1,21 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 from aiogram import types
-
+from typing import Union
 from src.parser.Vacancy import Vacancy
+
+start_options_cd = CallbackData('start_options_cd', 'choice')
+
+
+async def start_options_markup() -> InlineKeyboardMarkup:
+    markup = InlineKeyboardMarkup()
+    markup.row(
+        InlineKeyboardButton(text='Категорії', callback_data=start_options_cd.new('categories'))
+    )
+    markup.row(
+        InlineKeyboardButton(text='Пошук вручну', callback_data=start_options_cd.new('search'))
+    )
+    return markup
 
 category_cd = CallbackData('category_id', 'category_value')
 
@@ -31,8 +44,12 @@ async def exps_markup(exps: list[str]) -> InlineKeyboardMarkup:
 city_cd = CallbackData('city_id', 'city_text')
 
 
-async def cities_markup(cities: list[str]) -> InlineKeyboardMarkup:
+async def cities_markup(cities: list[str]) -> Union[InlineKeyboardMarkup, None]:
     markup = InlineKeyboardMarkup()
+
+    if not cities:
+        return None
+
     for city in cities:
         markup.row(
             InlineKeyboardButton(text=city, callback_data=city_cd.new(city))
