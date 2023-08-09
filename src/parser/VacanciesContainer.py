@@ -1,18 +1,19 @@
 from src.parser.Vacancy import Vacancy
+from src.parser.FirstJobEvent import FirstJobEvent
 from typing import Union
 
 
 class VacanciesContainer:
     def __init__(self):
-        self._vacancies: list[Vacancy] = []
+        self._vacancies: list[Union[Vacancy, FirstJobEvent]] = []
         self._vacancies_counter = 0
 
     # adds 1 vacancy
-    def add_vacancy(self, vacancy: Vacancy) -> None:
+    def add_vacancy(self, vacancy: Union[Vacancy, FirstJobEvent]) -> None:
         self._vacancies.append(vacancy)
 
     # adds multiple vacancies
-    def add_vacancies(self, vacancies: list[Vacancy]) -> None:
+    def add_vacancies(self, vacancies: list[Union[Vacancy, FirstJobEvent]]) -> None:
         self._vacancies.extend(vacancies)
 
     # returns only 1 vacancy or
@@ -21,7 +22,7 @@ class VacanciesContainer:
     # param following responses for direction which you want to go through the vacs list
     # if value None specified - func will return current vac (index counter doesn't change)
     # if value is True and False for following and previous, respectively (ind. counter changes higher and lower resp.)
-    def get_vacancy(self, following: Union[bool, None] = None) -> Union[Vacancy, None]:
+    def get_vacancy(self, following: Union[bool, None] = None) -> Union[Vacancy, FirstJobEvent, None]:
         if len(self._vacancies) < 1:
             return None
 
@@ -46,6 +47,18 @@ class VacanciesContainer:
                     return vacancy
                 else:
                     return None
+
+    # it`s get_vacancy wrapper. Returns complete message with formatted data to send it via telegram bot to user
+    def get_formatted_vacancy_msg(self, following=None) -> Union[str, None]:
+        vacancy = self.get_vacancy(following=following)
+
+        if vacancy:
+            msg = f'{vacancy.title}\n\nКомпанія: {vacancy.company}\n\n{vacancy.short_info}\n' \
+                           f'\n{vacancy.weblink}'
+
+            return msg
+        else:
+            return None
 
     def refresh_counter(self) -> None:
         self._vacancies_counter = 0

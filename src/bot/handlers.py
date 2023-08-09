@@ -20,7 +20,8 @@ async def send_welcome(message: types.Message, state: FSMContext):
 
     # Check if user have active session, if not, creates new session
     if message.from_user.id in active_sessions.keys():
-        session = active_sessions[message.from_user.id]
+        session: TabSession = active_sessions[message.from_user.id]
+        session.open_homepage()
     else:
         session = TabSession()
         active_sessions.update({message.from_user.id: session})
@@ -58,21 +59,20 @@ async def user_request_handler(message: types.Message, state: FSMContext):
     session.send_request(message.text)
 
     vacs_container = session.download_vacancies()
-    vacancy = vacs_container.get_vacancy()
+    msg = vacs_container.get_formatted_vacancy_msg()
 
-    if vacancy:
-        await state.update_data({'vac_container': vacs_container})
-
-        vacancy_text = f'{vacancy.title}\n\nКомпанія: {vacancy.company}\n\n{vacancy.short_info}\n' \
-                       f'\n{vacancy.weblink}'
-        await message.answer(vacancy_text, reply_markup=await keyboards.vacancy_keyboard())
+    if msg:
+        await state.update_data({'vacs_container': vacs_container})
+        await message.answer(msg,
+                             reply_markup=await keyboards.vacancy_keyboard(),
+                             disable_web_page_preview=True)
         await state.set_state(StorageStates.basic_state)
     else:
         await message.answer('Не знайдено вакансій')
 
 
-
 # categories_markup callback handler
+# categories selection
 @dp.callback_query_handler(keyboards.category_cd.filter(), state=StorageStates.basic_state)
 async def category_cb_handler(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
 
@@ -90,26 +90,37 @@ async def category_cb_handler(call: types.CallbackQuery, callback_data: dict, st
     await call.message.edit_reply_markup(await keyboards.exps_markup(session.get_exps()))
 
 
+# exps_markup callback handler
+# experience selection
 @dp.callback_query_handler(keyboards.exp_cd.filter(), state=StorageStates.basic_state)
 async def exp_cb_handler(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
-    cb_text = callback_data.get('exp_text')
+    cb_text: str = callback_data.get('exp_text')
     await state.update_data({'exp_text': cb_text})
 
     session: TabSession = active_sessions[call.from_user.id]
     session.set_exp(cb_text)
 
-    markup = await keyboards.cities_markup(session.get_cities())
-    if markup:
-        await call.message.edit_text('Оберіть місто')
-        await call.message.edit_reply_markup(await keyboards.cities_markup(session.get_cities()))
+    if cb_text.strip() == 'Без досвіду':
+        markup = await keyboards.newbie_markup()
+        await call.message.edit_text('Для початківців розрахований окремий розділ.\n'
+                                  'Ви можете переглянути курси/стажування, або подивитися вакансії для початківців.'
+                                  ' Нажаль, ці вакансії не поділяються за категоріями.')
+        await call.message.edit_reply_markup(reply_markup=markup)
     else:
-        await call.message.edit_text('Не знайдено вакансій')
-        try:
-            await call.message.edit_reply_markup(None)
-        except Exception:
-            pass
+        markup = await keyboards.cities_markup(session.get_cities())
+        if markup:
+            await call.message.edit_text('Оберіть місто')
+            await call.message.edit_reply_markup(await keyboards.cities_markup(session.get_cities()))
+        else:
+            await call.message.edit_text('Не знайдено вакансій')
+            try:
+                await call.message.edit_reply_markup(None)
+            except Exception:
+                pass
 
 
+# cities_markup callback handler
+# city selection
 @dp.callback_query_handler(keyboards.city_cd.filter(), state=StorageStates.basic_state)
 async def city_cb_handler(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
     cb_text = callback_data.get('city_text')
@@ -118,41 +129,47 @@ async def city_cb_handler(call: types.CallbackQuery, callback_data: dict, state:
     session: TabSession = active_sessions[call.from_user.id]
     session.set_city(cb_text)
 
-    vac_container = session.download_vacancies()
-    await state.update_data({'vac_container': vac_container})
+    await call.message.edit_text('Завантаження вакансій...')
+    vacs_container = session.download_vacancies()
+    await state.update_data({'vacs_container': vacs_container})
 
-    vacancy = vac_container.get_vacancy()
-    vacancy_text = f'{vacancy.title}\n\nКомпанія: {vacancy.company}\n\n{vacancy.short_info}\n' \
-                   f'\n{vacancy.weblink}'
-
-    await call.message.edit_text(vacancy_text, reply_markup=await keyboards.vacancy_keyboard())
+    await call.message.edit_text(vacs_container.get_formatted_vacancy_msg(),
+                                 reply_markup=await keyboards.vacancy_keyboard(),
+                                 disable_web_page_preview=True)
 
 
+# vacancy_markup callback handler
+# navigation in vacancy menu
+# functions: show next or previous vacancies, close menu
 @dp.callback_query_handler(keyboards.vacancy_cd.filter(), state=StorageStates.basic_state)
 async def vacancy_cb_handler(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
     choice: str = callback_data.get('choice')
+    if_fjes = callback_data.get('if_fjes')
+
     if choice != 'cancel':
         session: TabSession = active_sessions[call.from_user.id]
 
         state_data = await state.get_data()
-        vac_container: VacanciesContainer = state_data['vac_container']
 
-        if choice == 'show_following':
-            vacancy = vac_container.get_vacancy(following=True)
-        elif choice == 'show_previous':
-            vacancy = vac_container.get_vacancy(following=False)
+        if if_fjes == "True":
+            vacs_container: VacanciesContainer = state_data['fjes_container']
         else:
-            vacancy = None
+            vacs_container: VacanciesContainer = state_data['vacs_container']
 
-        if vacancy:
-            vacancy_text = f'{vacancy.title}\n\nКомпанія: {vacancy.company}\n\n{vacancy.short_info}\n' \
-                           f'\n{vacancy.weblink}'
+        # shows next vacancy
+        if choice == 'show_following':
+            vacancy_msg = vacs_container.get_formatted_vacancy_msg(following=True)
+        # shows previous vacancy
+        elif choice == 'show_previous':
+            vacancy_msg = vacs_container.get_formatted_vacancy_msg(following=False)
+        else:
+            vacancy_msg = None
 
-            await call.message.edit_text(vacancy_text)
-
+        if vacancy_msg:
+            await call.message.edit_text(vacancy_msg, disable_web_page_preview=True)
             await call.message.edit_reply_markup(await keyboards.vacancy_keyboard())
 
-            await state.update_data({'vac_container': vac_container})
+            await state.update_data({'vacs_container': vacs_container})
             await call.answer()
         else:
             await call.answer(text='Далі немає вакансій')
@@ -160,5 +177,41 @@ async def vacancy_cb_handler(call: types.CallbackQuery, callback_data: dict, sta
         await call.message.edit_reply_markup(None)
 
     await call.answer()
+
+
+# newbie_markup callback handler
+
+# Dou has another section for "no experience" users. It has vacancies for newbies and events for newbies
+# vacancies and events in this section don't divide into categories
+@dp.callback_query_handler(keyboards.newbie_cd.filter(), state=StorageStates.basic_state)
+async def newbie_kb_handler(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    choice: str = callback_data.get('choice')
+
+    session: TabSession = active_sessions[call.from_user.id]
+
+    if choice == 'vacancies':
+        await call.message.edit_text('Завантаження вакансій...')
+        vacs_container = session.download_vacancies()
+        await state.update_data({'vacs_container': vacs_container})
+
+        await call.message.edit_text(vacs_container.get_formatted_vacancy_msg(), disable_web_page_preview=True)
+        await call.message.edit_reply_markup(await keyboards.vacancy_keyboard())
+
+    elif choice == 'events':
+        await call.message.edit_text('Завантаження курсів і стажувань...')
+        fjes_container = session.download_fjes()
+        await state.update_data({'fjes_container': fjes_container})
+
+        await call.message.edit_text(fjes_container.get_formatted_vacancy_msg(), disable_web_page_preview=True)
+
+        await call.message.edit_reply_markup(await keyboards.vacancy_keyboard(fjes=True))
+
+
+
+
+
+
+
+
 
 

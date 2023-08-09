@@ -57,19 +57,31 @@ async def cities_markup(cities: list[str]) -> Union[InlineKeyboardMarkup, None]:
     return markup
 
 
-vacancy_cd = CallbackData('vacancy_id', 'choice')
+vacancy_cd = CallbackData('vacancy_id', 'choice', 'if_fjes')
 
 
-async def vacancy_keyboard():
+# if fjes attribute is True, it means that this keyboard will be used for newbie events (JobFirstEvent objects)
+async def vacancy_keyboard(fjes=False):
     markup = InlineKeyboardMarkup()
     markup.row(
-        InlineKeyboardButton(text='⬅️', callback_data=vacancy_cd.new('show_previous')),
-        InlineKeyboardButton(text='➡️', callback_data=vacancy_cd.new('show_following'))
+        InlineKeyboardButton(text='⬅️', callback_data=vacancy_cd.new('show_previous', str(fjes))),
+        InlineKeyboardButton(text='➡️', callback_data=vacancy_cd.new('show_following', str(fjes)))
     )
     markup.row(
-        InlineKeyboardButton(text='Відмінити', callback_data=vacancy_cd.new('cancel'))
+        InlineKeyboardButton(text='Відмінити', callback_data=vacancy_cd.new('cancel', str(fjes)))
     )
 
     return markup
 
 
+newbie_cd = CallbackData('newbie_id', 'choice')
+
+# This markup will be called when user presses the button "Без досвіду"
+async def newbie_markup():
+    markup = InlineKeyboardMarkup()
+    markup.row(
+        InlineKeyboardButton(text='Курси та івенти', callback_data=newbie_cd.new('events')),
+        InlineKeyboardButton(text='Вакансії', callback_data=newbie_cd.new('vacancies'))
+    )
+
+    return markup

@@ -12,6 +12,8 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from src.parser.Vacancy import Vacancy
 from src.parser.VacanciesContainer import VacanciesContainer
+from src.parser.FirstJobEvent import FirstJobEvent
+from src.parser.FJEsContainer import FJEsContainer
 
 
 class TabSession:
@@ -145,7 +147,29 @@ class TabSession:
         input_field.send_keys(text)
         input_field.submit()
 
+    # Downloads first job events
+    # Returns VacanciesContainer with FirstJobEvent objects inside it
+    def download_fjes(self) -> FJEsContainer:
+        fje_articles: list[WebElement] = self.driver.find_elements(By.XPATH,
+                                                                     '//div[@class="first-job-events"]//article')
 
+        fje_container = FJEsContainer()
+        for fje_article in fje_articles:
+            title = fje_article.find_element(By.XPATH, './/h2').text
+
+            where_and_when: WebElement = fje_article.find_element(By.XPATH, './/div[@class="when-and-where"]')
+            when = where_and_when.find_element(By.XPATH, './span').text
+
+            # excluding "when" text from "where_and_when" element
+            where = where_and_when.text.replace(when, '')
+
+            short_info = fje_article.find_element(By.XPATH, './/p').text
+            weblink = fje_article.find_element(By.XPATH, './/h2/a').get_attribute('href')
+
+            fje = FirstJobEvent(title, where, when, short_info, weblink)
+            fje_container.add_vacancy(fje)
+
+        return fje_container
 
 
 
