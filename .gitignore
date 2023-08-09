@@ -1,7 +1,9 @@
 # custom
-.venv
+/.venv
 /src/config.json
 /src/parser/test.py
+/config.json
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

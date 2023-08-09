@@ -2,7 +2,7 @@ import json
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-with open('src/config.json', 'r') as file:
+with open('config.json', 'r') as file:
     data = json.load(file)
     bot_token = data['BOT_TOKEN']
     user_agent = data['USER_AGENT']
