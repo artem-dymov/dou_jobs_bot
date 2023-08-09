@@ -1,9 +1,9 @@
-import selenium.webdriver
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.common import exceptions
+from selenium.webdriver.chrome.service import Service
 
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -17,6 +17,7 @@ from src.parser.FirstJobEvent import FirstJobEvent
 from src.parser.FJEsContainer import FJEsContainer
 
 from src.main import user_agent
+from src.main import chromedriver_location
 
 
 class TabSession:
@@ -25,9 +26,10 @@ class TabSession:
     def __init__(self):
         options = Options()
         options.add_argument(user_agent)
+
         options.headless = True
 
-        self.driver = webdriver.Chrome(options=options)
+        self.driver = webdriver.Chrome(options=options, service=Service(chromedriver_location))
         self.open_homepage()
 
     def open_homepage(self):
