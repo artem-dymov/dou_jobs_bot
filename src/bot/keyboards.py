@@ -34,6 +34,9 @@ exp_cd = CallbackData('exp_id', 'exp_text')
 
 async def exps_markup(exps: list[str]) -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
+    markup.row(
+        InlineKeyboardButton(text='Не обирати', callback_data=exp_cd.new('*'))
+    )
     for exp in exps:
         markup.row(
             InlineKeyboardButton(text=exp, callback_data=exp_cd.new(exp))
@@ -50,10 +53,14 @@ async def cities_markup(cities: list[str]) -> Union[InlineKeyboardMarkup, None]:
     if not cities:
         return None
 
+    markup.row(
+        InlineKeyboardButton(text='Не обирати', callback_data=city_cd.new('*'))
+    )
     for city in cities:
         markup.row(
             InlineKeyboardButton(text=city, callback_data=city_cd.new(city))
         )
+
     return markup
 
 

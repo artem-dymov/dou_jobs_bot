@@ -53,7 +53,7 @@ async def start_cb_handler(call: types.CallbackQuery, callback_data: dict, state
 # Button "Пошук вручну" handler
 @dp.message_handler(state=StorageStates.entering_request)
 async def user_request_handler(message: types.Message, state: FSMContext):
-    await message.answer('Робимо запит...')
+    response_msg = await message.answer('Робимо запит...')
 
     session: TabSession = active_sessions[message.from_user.id]
     session.send_request(message.text)
@@ -63,9 +63,8 @@ async def user_request_handler(message: types.Message, state: FSMContext):
 
     if msg:
         await state.update_data({'vacs_container': vacs_container})
-        await message.answer(msg,
-                             reply_markup=await keyboards.vacancy_keyboard(),
-                             disable_web_page_preview=True)
+        await response_msg.edit_text(msg, disable_web_page_preview=True)
+        await response_msg.edit_reply_markup(reply_markup=await keyboards.vacancy_keyboard())
         await state.set_state(StorageStates.basic_state)
     else:
         await message.answer('Не знайдено вакансій')
@@ -98,7 +97,9 @@ async def exp_cb_handler(call: types.CallbackQuery, callback_data: dict, state: 
     await state.update_data({'exp_text': cb_text})
 
     session: TabSession = active_sessions[call.from_user.id]
-    session.set_exp(cb_text)
+
+    if cb_text != '*':
+        session.set_exp(cb_text)
 
     if cb_text.strip() == 'Без досвіду':
         markup = await keyboards.newbie_markup()
@@ -127,7 +128,9 @@ async def city_cb_handler(call: types.CallbackQuery, callback_data: dict, state:
     await state.update_data({'city_text': cb_text})
 
     session: TabSession = active_sessions[call.from_user.id]
-    session.set_city(cb_text)
+
+    if cb_text != '*':
+        session.set_city(cb_text)
 
     await call.message.edit_text('Завантаження вакансій...')
     vacs_container = session.download_vacancies()

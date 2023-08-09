@@ -126,16 +126,22 @@ class TabSession:
 
         for vacancy_div in vacancies_divs:
 
+            # print(vacancy_div.get_attribute('innerHTML'))
             # this tag contains weblink to vac in href property and vac name in tag text
             a_tag: WebElement = vacancy_div.find_element(By.XPATH, './/div[@class="title"]/a')
 
             title: str = a_tag.text
             vac_link: str = a_tag.get_attribute('href')
 
+            try:
+                city = vacancy_div.find_element(By.XPATH, './/div[@class="title"]/span').text
+            except Exception:
+                city = 'не вказана'
+
             company: str = vacancy_div.find_element(By.XPATH, './/a[@class="company"]').text
             short_info: str = vacancy_div.find_element(By.XPATH, './/div[@class="sh-info"]').text
 
-            vacancy = Vacancy(title, company, short_info, vac_link)
+            vacancy = Vacancy(title, company, city, short_info, vac_link)
             vacancies_container.add_vacancy(vacancy)
 
         return vacancies_container

@@ -53,8 +53,8 @@ class VacanciesContainer:
         vacancy = self.get_vacancy(following=following)
 
         if vacancy:
-            msg = f'{vacancy.title}\n\nКомпанія: {vacancy.company}\n\n{vacancy.short_info}\n' \
-                           f'\n{vacancy.weblink}'
+            msg = f'{vacancy.title}\n\nКомпанія: {vacancy.company}\n\nЛокація: {vacancy.city}\n' \
+                  f'\n{vacancy.short_info}\n\n{vacancy.weblink}'
 
             return msg
         else:
