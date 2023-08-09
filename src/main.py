@@ -3,7 +3,9 @@ from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 with open('src/config.json', 'r') as file:
-    bot_token = json.load(file)['BOT_TOKEN']
+    data = json.load(file)
+    bot_token = data['BOT_TOKEN']
+    user_agent = data['USER_AGENT']
 
 bot = Bot(token=bot_token)
 

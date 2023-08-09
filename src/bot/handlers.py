@@ -49,6 +49,8 @@ async def start_cb_handler(call: types.CallbackQuery, callback_data: dict, state
             await call.message.answer('Введіть ваш текстовий запит')
             await state.set_state(StorageStates.entering_request)
 
+    await call.answer()
+
 
 # Button "Пошук вручну" handler
 @dp.message_handler(state=StorageStates.entering_request)
@@ -68,6 +70,7 @@ async def user_request_handler(message: types.Message, state: FSMContext):
         await state.set_state(StorageStates.basic_state)
     else:
         await message.answer('Не знайдено вакансій')
+
 
 
 # categories_markup callback handler

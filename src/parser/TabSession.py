@@ -9,18 +9,25 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.chrome.options import Options
 
 from src.parser.Vacancy import Vacancy
 from src.parser.VacanciesContainer import VacanciesContainer
 from src.parser.FirstJobEvent import FirstJobEvent
 from src.parser.FJEsContainer import FJEsContainer
 
+from src.main import user_agent
+
 
 class TabSession:
     website_link = 'https://jobs.dou.ua/vacancies/?'
 
     def __init__(self):
-        self.driver = webdriver.Chrome()
+        options = Options()
+        options.add_argument(user_agent)
+        options.headless = True
+
+        self.driver = webdriver.Chrome(options=options)
         self.open_homepage()
 
     def open_homepage(self):
@@ -126,7 +133,6 @@ class TabSession:
 
         for vacancy_div in vacancies_divs:
 
-            # print(vacancy_div.get_attribute('innerHTML'))
             # this tag contains weblink to vac in href property and vac name in tag text
             a_tag: WebElement = vacancy_div.find_element(By.XPATH, './/div[@class="title"]/a')
 
