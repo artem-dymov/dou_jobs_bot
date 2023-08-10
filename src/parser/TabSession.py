@@ -21,7 +21,7 @@ from src.main import remote_chromedriver_link
 
 
 class TabSession:
-    website_link = 'http://jobs.dou.ua/vacancies/?'
+    website_link = 'https://jobs.dou.ua/vacancies/?'
 
     def __init__(self):
         options = Options()
@@ -33,6 +33,7 @@ class TabSession:
         options.headless = True
 
         self.driver = webdriver.Remote(remote_chromedriver_link, options=options)
+        self.driver.maximize_window()
         print(self.driver.page_source)
 
         self.open_homepage()
