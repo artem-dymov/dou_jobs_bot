@@ -21,16 +21,18 @@ from src.main import remote_chromedriver_link
 
 
 class TabSession:
-    # website_link = 'https://jobs.dou.ua/vacancies/?'
-    website_link = 'https://eda.ru/recepty/zavtraki/sirniki-iz-tvoroga-18506'
+    website_link = 'https://jobs.dou.ua/vacancies/?'
 
     def __init__(self):
         options = Options()
         options.add_argument(user_agent)
         options.add_argument('--no-sandbox')
-        options.add_argument("--start-maximized")
-        options.add_argument('--disable-blink-features=AutomationControlled')
+
+        options.add_argument("start-maximized")
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        options.add_experimental_option('excludeSwitches', ['enable-logging'])
+        options.add_experimental_option('useAutomationExtension', False)
+        options.add_argument('--disable-blink-features=AutomationControlled')
 
         options.headless = True
 
