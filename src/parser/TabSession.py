@@ -34,7 +34,8 @@ class TabSession:
         options.add_experimental_option('useAutomationExtension', False)
         options.add_argument('--disable-blink-features=AutomationControlled')
 
-        options.headless = True
+        # options.headless = True
+        options.add_argument('--headless=new')
 
         self.driver = webdriver.Remote(remote_chromedriver_link, options=options)
         self.driver.maximize_window()
