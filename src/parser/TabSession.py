@@ -28,14 +28,14 @@ class TabSession:
         options.add_argument(user_agent)
         options.add_argument('--no-sandbox')
 
-        options.add_argument("start-maximized")
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option('excludeSwitches', ['enable-logging'])
-        options.add_experimental_option('useAutomationExtension', False)
+        # options.add_argument("start-maximized")
+        # options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        # options.add_experimental_option('excludeSwitches', ['enable-logging'])
+        # options.add_experimental_option('useAutomationExtension', False)
         options.add_argument('--disable-blink-features=AutomationControlled')
 
-        # options.headless = True
-        options.add_argument('--headless=new')
+        options.headless = True
+        # options.add_argument('--headless=')
 
         self.driver = webdriver.Remote(remote_chromedriver_link, options=options)
         self.driver.maximize_window()
