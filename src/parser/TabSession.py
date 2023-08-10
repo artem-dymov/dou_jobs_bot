@@ -26,6 +26,7 @@ class TabSession:
     def __init__(self):
         options = Options()
         options.add_argument(user_agent)
+        options.add_argument('--no-sandbox')
 
         options.headless = True
 
