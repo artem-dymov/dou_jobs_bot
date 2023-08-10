@@ -32,6 +32,7 @@ class TabSession:
         options.headless = True
 
         self.driver = webdriver.Remote(remote_chromedriver_link, options=options)
+        print(self.driver.page_source)
 
         self.open_homepage()
 
