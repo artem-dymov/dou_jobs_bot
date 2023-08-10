@@ -17,7 +17,7 @@ from src.parser.FirstJobEvent import FirstJobEvent
 from src.parser.FJEsContainer import FJEsContainer
 
 from src.main import user_agent
-from src.main import chromedriver_location
+from src.main import remote_chromedriver_link
 
 
 class TabSession:
@@ -29,9 +29,8 @@ class TabSession:
 
         options.headless = True
 
-        # self.driver = webdriver.Chrome(options=options, service=Service(chromedriver_location))
-        # self.driver = webdriver.Remote('http://localhost:9515', options=options)
-        self.driver = webdriver.Chrome()
+        self.driver = webdriver.Remote(remote_chromedriver_link, options=options)
+
         self.open_homepage()
 
     def open_homepage(self):

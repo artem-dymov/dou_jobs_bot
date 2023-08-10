@@ -6,7 +6,8 @@ with open('config.json', 'r') as file:
     data = json.load(file)
     bot_token = data['BOT_TOKEN']
     user_agent = data['USER_AGENT']
-    chromedriver_location = data['CHROMEDRIVER_LOCATION']
+    remote_chromedriver_link = data['REMOTE_CHROMEDRIVER_LINK']
+
 
 bot = Bot(token=bot_token)
 
