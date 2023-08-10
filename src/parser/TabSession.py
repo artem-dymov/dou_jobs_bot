@@ -21,7 +21,8 @@ from src.main import remote_chromedriver_link
 
 
 class TabSession:
-    website_link = 'https://jobs.dou.ua/vacancies/?'
+    # website_link = 'https://jobs.dou.ua/vacancies/?'
+    website_link = 'https://eda.ru/recepty/zavtraki/sirniki-iz-tvoroga-18506'
 
     def __init__(self):
         options = Options()
