@@ -17,4 +17,4 @@ __pip install -r requirements.txt__
 6. Start the program using:
 __python3 -m src.main__
 
-Make sure, that you are doing 2 last steps fron root of the project directory
+Make sure, that you are doing 2 last steps from root of the project directory
