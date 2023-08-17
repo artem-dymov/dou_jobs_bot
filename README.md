@@ -4,7 +4,7 @@
 
 1. Install Google Chrome and chromedriver on your system
 
-2. Start chromedriver in localhost (in fact, ypu can use remote chromedriver)
+2. Start chromedriver in localhost (in fact, you can use remote chromedriver)
 
 3. Clone this repo
 
